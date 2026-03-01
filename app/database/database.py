@@ -116,15 +116,51 @@ def init_default_user():
     """Cria o usuário padrão a partir das variáveis de ambiente ou st.secrets, se não existir."""
     import bcrypt
 
-    username = _get_secret("APP_USERNAME", "admin")
+    username = _get_secret("APP_USERNAME", "admin").strip()
     password = _get_secret("APP_PASSWORD", "admin123")
-    email = _get_secret("APP_EMAIL", "admin@example.com")
+    email = _get_secret("APP_EMAIL", "admin@example.com").strip()
     password_hash_env = _get_secret("APP_PASSWORD_HASH", "")
 
     existing = execute_query(
-        "SELECT id FROM user WHERE username = ?", (username,), fetch=True
+        "SELECT id, password_hash, email FROM user WHERE username = ?",
+        (username,),
+        fetch=True,
     )
     if existing:
+        user = existing[0]
+        updates = []
+        params = []
+
+        if password_hash_env:
+            if user["password_hash"] != password_hash_env:
+                updates.append("password_hash = ?")
+                params.append(password_hash_env)
+        else:
+            try:
+                password_ok = bcrypt.checkpw(
+                    password.encode("utf-8"),
+                    user["password_hash"].encode("utf-8"),
+                )
+            except Exception:
+                password_ok = False
+
+            if not password_ok:
+                new_hash = bcrypt.hashpw(
+                    password.encode("utf-8"), bcrypt.gensalt()
+                ).decode("utf-8")
+                updates.append("password_hash = ?")
+                params.append(new_hash)
+
+        if email and email != (user["email"] or ""):
+            updates.append("email = ?")
+            params.append(email)
+
+        if updates:
+            params.append(user["id"])
+            execute_query(
+                f"UPDATE user SET {', '.join(updates)} WHERE id = ?",
+                tuple(params),
+            )
         return
 
     if password_hash_env:
