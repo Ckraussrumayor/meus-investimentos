@@ -1,0 +1,30 @@
+# Dados do aplicativo (banco e chaves são criados automaticamente)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/.encryption_key
+!data/.gitkeep
+
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Variáveis de ambiente
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
