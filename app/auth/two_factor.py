@@ -52,6 +52,10 @@ def send_2fa_email(to_email: str, code: str) -> bool:
         st.info(f"🔑 Código 2FA (dev): **{code}**")
         return True
 
+    # Debug temporário: mostrar de onde vieram as credenciais SMTP
+    masked_pw = smtp_password[:4] + "****" if len(smtp_password) > 4 else "????"
+    st.info(f"🔍 Debug SMTP: email={smtp_email}, pw={masked_pw}, server={smtp_server}:{smtp_port}")
+
     try:
         msg = MIMEMultipart()
         msg["From"] = smtp_email
