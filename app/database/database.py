@@ -181,9 +181,27 @@ def get_smtp_config() -> dict:
 
     A senha SMTP é descriptografada automaticamente.
 
+    Prioridade:
+    1. st.secrets / variáveis de ambiente (se SMTP_EMAIL estiver definido)
+    2. Banco de dados (configuração via tela de Configurações)
+
     Returns:
         Dicionário com as configurações SMTP ou valores padrão.
     """
+    # Se os secrets/env tiverem SMTP_EMAIL configurado, usá-los diretamente.
+    # Isso evita problema no deploy onde a chave de criptografia é efêmera
+    # e a senha no banco pode não ser descriptografada corretamente.
+    smtp_email_secret = _get_secret("SMTP_EMAIL", "")
+    smtp_password_secret = _get_secret("SMTP_PASSWORD", "")
+    if smtp_email_secret and smtp_password_secret:
+        return {
+            "smtp_server": _get_secret("SMTP_SERVER", "smtp.gmail.com"),
+            "smtp_port": int(_get_secret("SMTP_PORT", "587")),
+            "smtp_email": smtp_email_secret,
+            "smtp_password": smtp_password_secret,
+            "use_tls": True,
+        }
+
     from app.utils.crypto import decrypt
 
     results = execute_query(
@@ -201,12 +219,12 @@ def get_smtp_config() -> dict:
             "use_tls": bool(row["use_tls"]),
         }
 
-    # Fallback: variáveis de ambiente ou st.secrets
+    # Fallback: sem configuração encontrada
     return {
-        "smtp_server": _get_secret("SMTP_SERVER", "smtp.gmail.com"),
-        "smtp_port": int(_get_secret("SMTP_PORT", "587")),
-        "smtp_email": _get_secret("SMTP_EMAIL", ""),
-        "smtp_password": _get_secret("SMTP_PASSWORD", ""),
+        "smtp_server": "smtp.gmail.com",
+        "smtp_port": 587,
+        "smtp_email": "",
+        "smtp_password": "",
         "use_tls": True,
     }
 
