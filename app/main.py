@@ -35,7 +35,7 @@ from app.auth.login import (
     logout,
 )
 from app.auth.two_factor import render_2fa_form
-from app.pages import dashboard, cadastro, simulador, cenarios, historico, relatorios, configuracoes
+from app.pages import dashboard, cadastro, simulador, cenarios, historico, relatorios, configuracoes, backup
 
 
 # Configuração da página
@@ -73,6 +73,7 @@ def render_sidebar():
             "📂 Cenários",
             "📅 Histórico",
             "📄 Relatórios",
+            "💾 Backup",
             "⚙️ Configurações",
         ]
         nav_to = st.session_state.pop("navigate_to", None)
@@ -142,6 +143,8 @@ def main():
         historico.render()
     elif page == "📄 Relatórios":
         relatorios.render()
+    elif page == "💾 Backup":
+        backup.render()
     elif page == "⚙️ Configurações":
         configuracoes.render()
 

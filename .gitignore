@@ -26,5 +26,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Backups locais
+backup_investimentos_*.json
+
 # Streamlit
 .streamlit/secrets.toml
